@@ -1,14 +1,30 @@
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import Count, Avg
 from .models import Patient, Appointment, Consultation, Message, Doctor, Availability, HealthData, Prescription, Feedback, Notification
 from .serializers import PatientSerializer, AppointmentSerializer, ConsultationSerializer, MessageSerializer, DoctorSerializer, AvailabilitySerializer, HealthDataSerializer, PrescriptionSerializer, FeedbackSerializer, NotificationSerializer
 from .notifications import send_appointment_notification
 from dj_rest_auth.registration.views import RegisterView
 from django.contrib.auth.models import User
+from django.shortcuts import render
+
+def my_view(request):
+    return render(request, 'my_template.html', context)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_patient(request):
+    if request.method == 'POST':
+        serializer = PatientSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
 
 class CustomRegisterView(RegisterView):
     permission_classes = [AllowAny]
@@ -29,13 +45,10 @@ class MessageListView(generics.ListAPIView):
     def get_queryset(self):
         return Message.objects.filter(receiver=self.request.user).order_by('-timestamp')
 
-class CustomRegisterView(RegisterView):
-    permission_classes = [AllowAny]
-    queryset = User.objects.all()
-
 class RegisterPatientView(generics.CreateAPIView):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
+    permission_classes = [permissions.AllowAny]
 
 class PatientProfileView(generics.RetrieveUpdateAPIView):
     queryset = Patient.objects.all()
@@ -64,14 +77,6 @@ class ConsultationCreateView(generics.CreateAPIView):
 class ConsultationDetailView(generics.RetrieveUpdateAPIView):
     queryset = Consultation.objects.all()
     serializer_class = ConsultationSerializer
-
-class MessageCreateView(generics.CreateAPIView):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
-
-class MessageListView(generics.ListAPIView):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
 
 class DoctorCreateView(generics.CreateAPIView):
     queryset = Doctor.objects.all()
