@@ -1,10 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <title>Patient Dashboard</title>
 </head>
 <body>
-$END$
+    <h2>Patient Dashboard</h2>
+    <div>
+        <h3>Appointments</h3>
+        <ul>
+            {% for appointment in appointments %}
+                <li>{{ appointment.date }} at {{ appointment.time }} with Dr. {{ appointment.doctor_name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div>
+        <h3>Consultations</h3>
+        <ul>
+            {% for consultation in consultations %}
+                <li>{{ consultation.date }} with Dr. {{ consultation.doctor_name }} ({{ consultation.consultation_type }})</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div>
+        <h3>Messages</h3>
+        <ul>
+            {% for message in messages %}
+                <li>From: {{ message.sender }} - {{ message.message }} ({{ message.timestamp }})</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div>
+        <h3>Feedback</h3>
+        <ul>
+            {% for fb in feedback %}
+                <li>Rating: {{ fb.rating }} - {{ fb.comments }} ({{ fb.date_submitted }})</li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>
