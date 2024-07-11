@@ -1,13 +1,12 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
+from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-from django.utils import timezone
-from datetime import timedelta
 from django.db.models import Count, Avg
 from .models import Patient, Appointment, Consultation, Message, Doctor, Availability, HealthData, Prescription, Feedback, Notification
-from .serializers import PatientSerializer, AppointmentSerializer, ConsultationSerializer, MessageSerializer, DoctorSerializer, AvailabilitySerializer, HealthDataSerializer, PrescriptionSerializer, FeedbackSerializer, NotificationSerializer
+from .serializers import UserSerializer, PatientSerializer, AppointmentSerializer, ConsultationSerializer, MessageSerializer, DoctorSerializer, AvailabilitySerializer, HealthDataSerializer, PrescriptionSerializer, FeedbackSerializer, NotificationSerializer
 from .notifications import send_appointment_notification
 from dj_rest_auth.registration.views import RegisterView
 from django.contrib.auth.models import User
@@ -15,6 +14,13 @@ from django.shortcuts import render
 
 def my_view(request):
     return render(request, 'my_template.html', context)
+
+class CustomRegisterView(RegisterView):
+    permission_classes = [AllowAny]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -26,9 +32,7 @@ def register_patient(request):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
-class CustomRegisterView(RegisterView):
-    permission_classes = [AllowAny]
-    queryset = User.objects.all()
+
 
 class MessageCreateView(generics.CreateAPIView):
     queryset = Message.objects.all()
@@ -48,7 +52,26 @@ class MessageListView(generics.ListAPIView):
 class RegisterPatientView(generics.CreateAPIView):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        user_data = {
+            'username': request.data.get('username'),
+            'password': request.data.get('password'),
+            'email': request.data.get('email')
+        }
+        user = User.objects.create_user(**user_data)
+        patient_data = {
+            'user': user.id,
+            'name': request.data.get('name'),
+            'age': request.data.get('age'),
+            'contact_details': request.data.get('contact_details')
+        }
+        serializer = self.get_serializer(data=patient_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class PatientProfileView(generics.RetrieveUpdateAPIView):
     queryset = Patient.objects.all()

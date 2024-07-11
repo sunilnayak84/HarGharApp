@@ -1,15 +1,13 @@
+# patients/serializers.py
+
 from rest_framework import serializers
-from .models import Notification, Patient, Appointment, Consultation, Message, Doctor, Availability, HealthData, Prescription, Feedback
+from django.contrib.auth.models import User
+from .models import Patient, Appointment, Consultation, Message, Doctor, Availability, HealthData, Prescription, Feedback, Notification
 
-class MessageSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Message
-        fields = '__all__'
-
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = '__all__'
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
 class PatientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,4 +52,9 @@ class PrescriptionSerializer(serializers.ModelSerializer):
 class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
+        fields = '__all__'
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
         fields = '__all__'

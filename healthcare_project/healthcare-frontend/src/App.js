@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import RegisterPatient from './components/RegisterPatient';
+import Login from './components/Login';
+import PatientProfile from './components/PatientProfile';
+
 
 const App = () => {
   return (
@@ -17,7 +20,9 @@ const App = () => {
           </div>
         </nav>
         <Routes>
-          <Route path="/register" element={<RegisterPatient />} />
+        <Route path="/register" element={<RegisterPatient />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<PatientProfile />} />
         </Routes>
       </div>
     </Router>
